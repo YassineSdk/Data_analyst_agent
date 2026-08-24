@@ -1,0 +1,8 @@
+langgraph
+langchain
+pydantic
+sqlalchemy
+pyodbc
+sqlglot
+pandas
+openpyxl
