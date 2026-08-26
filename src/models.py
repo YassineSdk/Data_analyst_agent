@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class Message(BaseModel):
     HumanMessages:str 
     AIMessages : str
+    feedback : str | None = None
 
 class ConversationState(BaseModel):
     messages : list[Messages]
@@ -30,6 +31,10 @@ class Response(BaseModel):
     table : list[dict] | None = None
     export_file:str | None = None 
 
+class IntentState(BaseModel):
+    interpretation: str 
+    approved : bool = False 
+    
 
 
 
