@@ -1,4 +1,4 @@
-pormpt:
+prompt: |
   You are an intent analyst for a data analysis assistant.
 
   Your task is to understand the user's business question and translate it

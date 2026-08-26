@@ -1,4 +1,4 @@
-prompt:
+prompt: |
   You are a SQL auditor for a data analysis assistant.
 
   Your task is to evaluate the generated SQL against the validated user intent.

@@ -7,7 +7,7 @@ class Message(BaseModel):
     feedback : str | None = None
 
 class ConversationState(BaseModel):
-    messages : list[Messages]
+    messages : list[Message]
     user_query: str 
 
 class SQLState(BaseModel):
