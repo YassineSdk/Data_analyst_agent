@@ -13,7 +13,7 @@ from models import (
 class AgentState(TypedDict):
     conversation: ConversationState
     data_context: str
-    Intent:IntentState
+    intent:list[IntentState]
     sql: NotRequired[SQLState | None ]
     audit: NotRequired[AuditState | None ]
     execution: NotRequired[ExecutionState | None ]

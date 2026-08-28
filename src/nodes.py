@@ -1,4 +1,6 @@
 from state import AgentState
+from models import ExecutionState
+from langgraph.types import interrupt
 
 from agents import (
     sql_generator_llm,
@@ -6,13 +8,18 @@ from agents import (
     result_analyst_llm,
     intent_analyst_llm
 )
-
-
-
+from excuter import sql_executor
 
 def intent_analyst(state:AgentState)->dict:
     """
+    Analyses the human query and retuns a well structured and build business query
+    that the human needs to approve or add feedback so that the agent enhances it 
     """
+
+    previous_intent = (
+        state["intents"][-1]
+        if state["intents"]
+        else None )
     human_template =f"""
     User query:
     {state["conversation"].user_query}
@@ -21,12 +28,31 @@ def intent_analyst(state:AgentState)->dict:
     {state["data_context"]}
 
     feedback:
-    {state['conversation'].feedback}
+    {state['intent'].feedback}
     """
 
     result = intent_analyst_llm.invoke(
         {"human_template":human_template}
     )
+
+    # human approvel of the intent 
+    human_feedback = interrupt(
+        {
+            "type":"intent_approvel",
+            "interpretation":state['intent'].interpretation
+        }
+    )
+
+    # Human approved the interpretation
+    if human_response["approved"]:
+        result.approved = True
+
+
+    # Human rejected it -> store feedback for the next iteration
+    else:
+        result.approved = False
+        result.feedback = human_response["feedback"]
+
     return {
         "intent":result
     }
@@ -34,6 +60,7 @@ def intent_analyst(state:AgentState)->dict:
 
 def sql_generator(state: AgentState)-> dict :
     """
+    generates an SQL script that solves the users query
     """
     human_template =f"""
     User query:
@@ -43,7 +70,7 @@ def sql_generator(state: AgentState)-> dict :
     {state["data_context"]}
 
     feedback:
-    {state['conversation'].feedback}
+    {state['intent'].feedback}
     """
 
     result = sql_auditor_prompt.invoke(
@@ -109,7 +136,14 @@ def result_analyst(state:AgentState)->dict:
     }
 
 
+def execute(state:AgentState)->dict:
+    result = sql_executor.execute(
+        state["sql"].query
+    )
 
+    return {
+        "execution":ExecutionState(**result)
+    }
 
 
 

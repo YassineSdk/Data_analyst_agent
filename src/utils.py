@@ -10,3 +10,5 @@ def load_yaml(filename):
     with open(PROMPT_PATH,"r",encoding="utf-8") as f :
         prompt = yaml.safe_load(f)
     return(prompt["prompt"])
+
+
