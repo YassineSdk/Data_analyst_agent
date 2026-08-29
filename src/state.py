@@ -5,7 +5,7 @@ from models import (
         AuditState,
         ExecutionState,
         Response,
-        IntentState
+        IntentHistory
     )
 
 
@@ -13,7 +13,8 @@ from models import (
 class AgentState(TypedDict):
     conversation: ConversationState
     data_context: str
-    intent:list[IntentState]
+    current_message_id:str
+    intent_histories:list[IntentHistory]
     sql: NotRequired[SQLState | None ]
     audit: NotRequired[AuditState | None ]
     execution: NotRequired[ExecutionState | None ]

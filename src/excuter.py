@@ -38,9 +38,9 @@ class SQLExecutor:
 
 sql_executor = SQLExecutor(connection_string)
 sql_executor.connect()
-query = """
-SELECT DISINCT(ProductName) 
-FROM products
+# query = """
+# SELECT DISINCT(ProductName) 
+# FROM products
 
-"""
-print(sql_executor.execute(query))
+# """
+# print(sql_executor.execute(query))

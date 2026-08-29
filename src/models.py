@@ -1,13 +1,13 @@
-from pydantic import BaseModel 
+from pydantic import BaseModel , Field
 
 
 class Message(BaseModel):
+    id:str
     HumanMessages:str 
     AIMessages : str
 
 class ConversationState(BaseModel):
     messages : list[Message]
-    user_query: str 
 
 class SQLState(BaseModel):
     query:str
@@ -34,8 +34,10 @@ class IntentState(BaseModel):
     interpretation: str 
     feedback : str | None = None
     approved : bool = False 
-    
 
+class IntentHistory(BaseModel):
+    message_id : str 
+    intents: list[IntentState] = Field(default_factory=list)
 
 
 

@@ -6,7 +6,6 @@ from state import AgentState
 
 
 
-
 def intent_route(state:AgentState)->str:
     """
     it routes the graph to the sql_generater if the intent is validated 
