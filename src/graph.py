@@ -11,8 +11,17 @@ def intent_route(state:AgentState)->str:
     it routes the graph to the sql_generater if the intent is validated 
     by the user else the user passes feedback to it  
     """
-    latest_intent = state["intents"][-1]
-    if state['intent'].approved:
+
+    # current message id : 
+    latest_message = state['messages'][-1]
+    history = next(
+        history
+        for history in state["intent_histories"]
+        if history.message_id == latest_message.id
+    )
+    latest_intent = history.intents[-1]
+    
+    if latest_intent.approved:
         return "sql_generator"
 
     return "intent_analyst"

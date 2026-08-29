@@ -9,18 +9,15 @@ class SQLExecutor:
     def __init__(self,connection_string:str):
 
         self.connection_string=connection_string
-        self.connection = None 
-
-    def connect(self):
-        self.connection = psycopg.connect(self.connection_string)
-    
 
     def execute(self,query:str):
         try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(query)
-                columns = [desc.name for desc in cursor.description]
-                rows = cursor.fetchall()
+            with psycopg.connect(self.connection_string) as connection:
+
+                with connection.cursor() as cursor:
+                    cursor.execute(query)
+                    columns = [desc.name for desc in cursor.description]
+                    rows = cursor.fetchall()
 
             return {
                 "success":True,
@@ -37,10 +34,9 @@ class SQLExecutor:
             }
 
 sql_executor = SQLExecutor(connection_string)
-sql_executor.connect()
 # query = """
-# SELECT DISINCT(ProductName) 
-# FROM products
+# SELECT SUM(revenue) as total_revenue 
+# FROM sales 
 
 # """
 # print(sql_executor.execute(query))

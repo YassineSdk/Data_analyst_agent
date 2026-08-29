@@ -15,7 +15,7 @@ def load_yaml(filename):
 def intent_template_maker(state)-> str:
 
     # 1. Get the current message ID
-    last_message = state["conversation"].message[-1]
+    last_message = state["messages"][-1]
     user_query = last_message.HumanMessages
     message_id = last_message.id
 
@@ -36,22 +36,22 @@ def intent_template_maker(state)-> str:
 
     # 3. Build the complete intent/feedback history
 
-    if history.iterations:
+    if history.intents:
 
         intent_history_text = "\n\n".join(
             f"""
             Iteration {i}:
 
             Intent:
-            {iteration.interpretation}
+            {intent.interpretation}
 
             Feedback:
-            {iteration.feedback if iteration.feedback else "No feedback provided."}
+            {intent.feedback if intent.feedback else "No feedback provided."}
 
             Approved:
-            {iteration.approved}
+            {intent.approved}
             """
-            for i, iteration in enumerate(history.iterations)
+            for i, intent in enumerate(history.intents)
         )
 
     else:
@@ -65,10 +65,17 @@ def intent_template_maker(state)-> str:
     {user_query}
 
     Data context:
-    {state["data_context"]}
+    {read_context("data_context.txt")}
 
     Intent refinement history:
     {intent_history_text}
 
     """
     return human_template
+
+def read_context(filename:str)->str:
+
+    PROJECT_PATH = Path(__file__).resolve().parent.parent
+    FILE_PATH = PROJECT_PATH / filename
+    with open(FILE_PATH,"r",encoding="utf-8") as f:
+        return f.read()
