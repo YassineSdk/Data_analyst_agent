@@ -5,6 +5,36 @@ from graph import Agent
 from models import Message,IntentHistory
 
 
+@cl.set_starters
+async def set_starters():
+    return[
+        cl.Starter(
+            label="Sales Summary",
+            message="""Give me a sales performance summary for 2025,
+                including total revenue, total COGS, total profit, and total quantity sold.
+                Compare the results with 2024 and highlight the main changes.
+            """,
+            icon="/public/sales.svg"
+        ),
+        cl.Starter(
+            label="Product Performance",
+            message="""
+            Analyze product performance for 2025. Show me the top 5 products by total revenue,
+            their total quantity sold and profit, and identify which products performed the best overall.
+            """,
+            icon="/public/products_perf.svg"
+        ),
+        cl.Starter(
+            label="Regional Performance",
+            message="""
+            Analyze sales performance by region for 2025. Show total revenue,
+            total COGS, total profit, and quantity sold for each region,
+            then identify the strongest and weakest performing regions.
+            """,
+            icon="/public/regional_perf.svg"
+        )
+    ]
+
 
 @cl.on_chat_start
 async def start():
@@ -14,10 +44,6 @@ async def start():
         "thread_id",
         thread_id
     )
-
-    await cl.Message(
-        content="Hello! How can I help you?"
-    ).send()
 
 @cl.on_message
 async def main(message: cl.Message):
