@@ -115,21 +115,24 @@ def sql_auditor(state:AgentState)->dict:
     latest_message = state["messages"][-1]
     history,latest_intent = get_current_history(state)
 
-    human_template=f"""
-    Validated user intent:
+    human_template = f"""
+    User query:
+    {state["messages"][-1].HumanMessages}
+
+    Data context:
+    {Data_CONTEXT}
+
+    SQL Query:
+    {state['sql']}
+
+    Current intent:
     {latest_intent.interpretation}
-    SQL query :
-    {state['sql'].query}
 
-    Explanation:
-    {state['sql'].explanation}
+    Confidence:
+    {latest_intent.confidence}
 
-    tables_used:
-    {state['sql'].tables_used}
-
-    Columns used:
-    {state["sql"].used_columns}
-
+    Feedback:
+    {latest_intent.feedback or "None"}
     """
 
     result = sql_auditor_llm.invoke({
