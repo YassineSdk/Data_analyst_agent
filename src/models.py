@@ -1,4 +1,5 @@
 from pydantic import BaseModel , Field
+from typing import Literal
 
 
 class Message(BaseModel):
@@ -54,6 +55,17 @@ class IntentState(BaseModel):
 class IntentHistory(BaseModel):
     message_id : str 
     intents: list[IntentState] = Field(default_factory=list)
+
+class PlotState(BaseModel):
+    plottype : Literal['bar',"line","pie"]
+    title : str 
+    description : str | None 
+    x : str 
+    y : str 
+    color : str | None 
+
+class AllPlots(BaseModel):
+    plots : list[PlotState]
 
 
 

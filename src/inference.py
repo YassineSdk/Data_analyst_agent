@@ -40,7 +40,6 @@ async def set_starters():
     ]
 
 
-
 async def handle_interruption(result,config):
     """
     """
@@ -82,7 +81,12 @@ async def start():
     )
 
     settings = await cl.ChatSettings(
-            [
+            [   
+                cl.input_widget.Switch(
+                    id="plots",
+                    label="Generate visualizations",
+                    initial=True,
+                ),
                 cl.input_widget.Select(
                     id="interaction_mode",
                     label="Interaction Mode",
@@ -107,7 +111,6 @@ async def setup_agent(settings):
         "interaction_mode",
         settings["interaction_mode"]
     )
-
 
 
 @cl.on_message
@@ -156,6 +159,7 @@ async def main(message: cl.Message):
     await cl.Message(
         content=response.answer
     ).send()
+
 
 
 

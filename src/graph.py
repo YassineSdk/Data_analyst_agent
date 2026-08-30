@@ -35,6 +35,10 @@ def audit_route(state:AgentState)->str:
 
     return "sql_generator"
 
+def plotting_route(state:AgentState)->str:
+    """
+    """
+    if state['plots_enabled'] and 
 
 # defining the graph 
 graph = StateGraph(AgentState)

@@ -9,7 +9,8 @@ from agents import (
     sql_generator_llm,
     sql_auditor_llm,
     result_analyst_llm,
-    intent_analyst_llm
+    intent_analyst_llm,
+    plot_analyst_llm
 )
 from excuter import sql_executor
 from utils import (intent_template_maker,
@@ -17,7 +18,7 @@ from utils import (intent_template_maker,
         get_current_history
         )
 from config import CONFIDENCE_THRESHOLD
-
+import pandas as pd 
 
 
 Data_CONTEXT = read_context("data_context.txt")
@@ -182,14 +183,45 @@ def execute(state:AgentState)->dict:
     result = sql_executor.execute(
         state["sql"].query
     )
+
+    df = pd.DataFrame(
+            result["result"],
+            columns=result["columns"]
+        )
+
     pprint(result)
+    pprint(df)
     return {
-        "execution":ExecutionState(**result)
+        "execution":ExecutionState(**result),
+        "data":df
     }
 
 
+def plot_analyst(state:AgentState)->dict:
+    """
+    """
 
+    logger.info("starting the plotting agent ")
 
+    _,current_intent = get_current_history(state)
+
+    human_template = f"""
+    data:
+    {state[data]}
+
+    intent :
+    {current_intent.interpretation}
+    """
+
+    result = plot_analyst_llm({
+        "human_template":human_template
+        }
+    )
+    pprint(result)
+
+    return {
+        "allplots":result
+    }
 
 
 
