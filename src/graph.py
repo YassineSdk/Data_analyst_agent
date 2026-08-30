@@ -2,29 +2,27 @@ from langgraph.graph import START, END, StateGraph
 from langgraph.checkpoint.memory import InMemorySaver
 from nodes import * 
 from state import AgentState
-
+from utils import get_current_history
 
 
 
 def intent_route(state:AgentState)->str:
     """
-    it routes the graph to the sql_generater if the intent is validated 
-    by the user else the user passes feedback to it  
+    it routes the graph to :
+    - the sql_generater if the intent does not needs clarification
+    - intent analyst if the the request needs clarification .
+    by the user else the user provides feedback to it  
     """
-
+    if state['mode'] == "Ask for clarification" :
     # current message id : 
-    latest_message = state['messages'][-1]
-    history = next(
-        history
-        for history in state["intent_histories"]
-        if history.message_id == latest_message.id
-    )
-    latest_intent = history.intents[-1]
+        _,latest_intent = get_current_history(state)
     
-    if latest_intent.approved:
-        return "sql_generator"
+        if latest_intent.confidence >= CONFIDENCE_THRESHOLD:
+            return "sql_generator"
+        else :
+            return "intent_analyst"
 
-    return "intent_analyst"
+    return "sql_generator"
 
 
 def audit_route(state:AgentState)->str:
@@ -37,6 +35,8 @@ def audit_route(state:AgentState)->str:
 
     return "sql_generator"
 
+
+# defining the graph 
 graph = StateGraph(AgentState)
 
 #nodes 
@@ -47,15 +47,17 @@ graph.add_node("result_analyst",result_analyst)
 graph.add_node("execute",execute)
 
 #Workflow 
-
 graph.add_edge(START,"intent_analyst")
+
 graph.add_conditional_edges(
     "intent_analyst",
     intent_route,
     {
         "sql_generator": "sql_generator",
         "intent_analyst": "intent_analyst",
-    })
+    }
+)
+
 
 graph.add_edge("sql_generator","sql_auditor")
 
@@ -69,8 +71,8 @@ graph.add_conditional_edges(
 )
 
 graph.add_edge("execute","result_analyst")
-graph.add_edge("result_analyst",END)
 
+graph.add_edge("result_analyst",END)
 
 checkpointer = InMemorySaver()
 

@@ -12,7 +12,11 @@ from agents import (
     intent_analyst_llm
 )
 from excuter import sql_executor
-from utils import intent_template_maker, read_context
+from utils import (intent_template_maker,
+        read_context ,
+        get_current_history
+        )
+from config import CONFIDENCE_THRESHOLD
 
 
 
@@ -23,44 +27,47 @@ def intent_analyst(state: AgentState) -> dict:
     logger.info("Starting the intent analyst")
     human_template = intent_template_maker(state)
 
+    # Generating the new intent
     result = intent_analyst_llm.invoke(
         {
             "human_template": human_template
         }
     )
 
-    result.approved = True
-    result.feedback = None
-
     pprint(result)
-    message_id = state["messages"][-1].id
+    if state['mode'] == "Ask for clarification": 
+        # Derive if clarification is still needed 
+        if result.confidence < CONFIDENCE_THRESHOLD:
+            logger.info(
+                "Confidence below threshold (%.2f). "
+                "Requesting user clarification.",
+                CONFIDENCE_THRESHOLD
+            )
 
-    # Find the current history
-    history = next(
-        h
-        for h in state["intent_histories"]
-        if h.message_id == message_id
+        # Pause the graph and ask the user
+            feedback = interrupt(
+                    {
+                        "type": "intent_clarification",
+                        "question": result.clarification
+                    }
+                )
+        
+            logger.info(
+                    "User feedback received: %s",
+                    feedback
+                )
+
+            # adding feedback to the result
+            result.feedback = feedback
+    
+    # create new intent 
+    new_history = IntentHistory(
+    message_id=state["messages"][-1].id,
+    intents=[result]
     )
-
-    # Create a NEW history with the new intent
-    updated_history = IntentHistory(
-        message_id=history.message_id,
-        intents=[
-            *history.intents,
-            result
-        ]
-    )
-
-    # Replace the old history
-    updated_histories = [
-        updated_history
-        if h.message_id == message_id
-        else h
-        for h in state["intent_histories"]
-    ]
 
     return {
-        "intent_histories": updated_histories
+        "intent_histories": [new_history]
     }
 
 
@@ -72,12 +79,7 @@ def sql_generator(state: AgentState)-> dict :
     logger.info("starting the SQL generator agent")
 
     latest_message = state["messages"][-1]
-    current_history = next((
-        h for h in state["intent_histories"] 
-        if h.message_id == latest_message.id),
-        None
-        )
-    latest_intent = current_history.intents[-1]
+    history,latest_intent = get_current_history(state)
     
     human_template =f"""
     User query:
@@ -111,12 +113,7 @@ def sql_auditor(state:AgentState)->dict:
     logger.info("starting the SQL auditor agent")
 
     latest_message = state["messages"][-1]
-    current_history = next((
-        h for h in state["intent_histories"] 
-        if h.message_id == latest_message.id),
-        None
-        )
-    latest_intent = current_history.intents[-1]
+    history,latest_intent = get_current_history(state)
 
     human_template=f"""
     Validated user intent:
@@ -151,13 +148,9 @@ def result_analyst(state:AgentState)->dict:
     """
 
     logger.info("starting the result analyst agent")
+
     latest_message = state["messages"][-1]
-    current_history = next((
-        h for h in state["intent_histories"] 
-        if h.message_id == latest_message.id),
-        None
-        )
-    latest_intent = current_history.intents[-1]
+    history,latest_intent = get_current_history(state)
 
     human_template = f"""
     Validated user intent:
@@ -178,6 +171,7 @@ def result_analyst(state:AgentState)->dict:
 
 def execute(state:AgentState)->dict:
     """
+    executes the SQL code 
     """
 
     logger.info("executing the SQL query")
@@ -189,6 +183,7 @@ def execute(state:AgentState)->dict:
     return {
         "execution":ExecutionState(**result)
     }
+
 
 
 

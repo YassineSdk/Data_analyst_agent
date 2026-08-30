@@ -1,4 +1,4 @@
-from typing import TypedDict, NotRequired, Annotated
+from typing import TypedDict, NotRequired, Annotated , Literal
 from models import (
         Message,
         SQLState,
@@ -8,18 +8,15 @@ from models import (
         IntentHistory
     )
 
-
-def add_messages(
-    old:list[Message],
-    new:list[Message])-> list[Message]:
-    return old + new
+from utils import add_messages,add_intent_history
 
 
 
 class AgentState(TypedDict):
     messages: Annotated[list[Message],add_messages]
+    mode : Literal["Automatic","Ask for clarification"]
     current_message_id:str
-    intent_histories:list[IntentHistory]
+    intent_histories:Annotated[list[IntentHistory],add_intent_history]
     sql: NotRequired[SQLState | None ]
     audit: NotRequired[AuditState | None ]
     execution: NotRequired[ExecutionState | None ]

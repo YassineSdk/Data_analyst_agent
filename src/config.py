@@ -1,0 +1,5 @@
+
+# Agent configuration
+
+CONFIDENCE_THRESHOLD=0.60 
+AUTONIMOUS_MODE=False

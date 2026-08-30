@@ -32,8 +32,24 @@ class Response(BaseModel):
 
 class IntentState(BaseModel):
     interpretation: str 
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="""
+        ranges from 0 to 1 and mesures the level 
+        of clarity and information the the agent has 
+        over the user query 
+        """)
     feedback : str | None = None
-    approved : bool = False 
+    needs_clarification: bool = False
+    clarification: str | None = Field(
+    default=None,
+    description="""
+    The question the agent should ask the user when important
+    information is missing or the request is ambiguous.
+    Null when no clarification is required.
+    """
+    )
 
 class IntentHistory(BaseModel):
     message_id : str 
