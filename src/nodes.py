@@ -184,20 +184,13 @@ def execute(state:AgentState)->dict:
         state["sql"].query
     )
 
-    df = pd.DataFrame(
-            result["result"],
-            columns=result["columns"]
-        )
-
     pprint(result)
-    pprint(df)
     return {
-        "execution":ExecutionState(**result),
-        "data":df
+        "execution":ExecutionState(**result)
     }
 
 
-def plot_analyst(state:AgentState)->dict:
+def plot_builder(state:AgentState)->dict:
     """
     """
 
@@ -206,14 +199,17 @@ def plot_analyst(state:AgentState)->dict:
     _,current_intent = get_current_history(state)
 
     human_template = f"""
-    data:
-    {state[data]}
+    rows:
+    {state["execution"].result}
+
+    rows:
+    {state["execution"].columns}
 
     intent :
     {current_intent.interpretation}
     """
 
-    result = plot_analyst_llm({
+    result = plot_analyst_llm.invoke({
         "human_template":human_template
         }
     )

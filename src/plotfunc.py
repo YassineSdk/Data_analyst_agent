@@ -20,7 +20,7 @@ def create_barchart(df:pd.DataFrame,plot:PlotState):
     )
 
 def create_line(df:pd.DataFrame,plot:PlotState):
-    return px.bar(
+    return px.line(
         df,
         x=plot.x,
         y=plot.y,
@@ -46,25 +46,39 @@ PLOT_REGISTRY = {
 }
 
 
-def Get_Plots(allplots:AllPlots,df:pd.DataFrame):
+def Get_Plots(state) -> list:
     """
     Generate Plotly figures from the requested plot configurations.
-    Each PlotState is mapped to its corresponding plotting function
-    through the PLOT_REGISTRY.
+
+    The function converts the executor result into a DataFrame,
+    retrieves the requested plots, and maps each plot type to its
+    corresponding plotting function through PLOT_REGISTRY.
     """
+
+    execution = state["execution"]
+    allplots = state["allplots"]
+
+    df = pd.DataFrame(
+        execution.result,
+        columns=execution.columns
+    )
+
     figures = []
+
     for plot in allplots.plots:
-        plot_funtion = PLOT_REGISTRY.get(plot.plottype)
+
+        plot_function = PLOT_REGISTRY.get(plot.plottype)
 
         if plot_function is None:
             raise ValueError(
                 f"Unsupported plot type: {plot.plottype}"
             )
-        fig = plot_funtion(df,plot)
+
+        fig = plot_function(df, plot)
 
         figures.append(fig)
 
-        return figures
+    return figures
 
 
 

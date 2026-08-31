@@ -4,7 +4,7 @@ import uuid
 from models import Message,IntentHistory
 from rich.pretty import pprint
 from langgraph.types import Command
-
+from plotfunc import Get_Plots
 from graph import Agent
 
 
@@ -103,6 +103,10 @@ async def start():
         "interaction_mode",
         settings["interaction_mode"]
     )
+    cl.user_session.set(
+        "plots",
+        settings["interaction_mode"]
+    )
 
 
 @cl.on_settings_update
@@ -112,17 +116,23 @@ async def setup_agent(settings):
         settings["interaction_mode"]
     )
 
+    cl.user_session.set(
+        "plots",
+        settings["plots"]
+    )
+
 
 @cl.on_message
 async def main(message: cl.Message):
 
     thread_id = cl.user_session.get("thread_id")
     mode = cl.user_session.get("interaction_mode")
+    plots_enabled = cl.user_session.get("plots")
     message_id = str(uuid.uuid4())
     config = {
         "configurable":{"thread_id":thread_id}
     }
-
+    
     new_message = Message(
         id=message_id,
         HumanMessages=message.content,
@@ -137,6 +147,7 @@ async def main(message: cl.Message):
     initial_state = {
     "messages": [new_message],
     "mode":mode,
+    "plots_enabled":plots_enabled,
     "data_context": "",
     "intent_histories": [
         new_intent_history
@@ -154,11 +165,25 @@ async def main(message: cl.Message):
     if result is None:
         return
     
+    figures = []
     response = result["response"]
+    allplots = result.get("allplots")
 
-    await cl.Message(
+    if plots_enabled and response.visualization and  allplots :
+
+        figures = Get_Plots(result)
+
+    msg = await cl.Message(
         content=response.answer
     ).send()
+
+    for fig in figures:
+        await cl.Plotly(
+            name=fig.layout.title.text,
+            figure=fig,
+            display="inline"
+        ).send(for_id=msg.id) 
+
 
 
 

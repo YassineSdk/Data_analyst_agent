@@ -37,8 +37,16 @@ def audit_route(state:AgentState)->str:
 
 def plotting_route(state:AgentState)->str:
     """
+    routes the graph to either run the plotting 
+    node or end the graph
     """
-    if state['plots_enabled'] and 
+    if not state['plots_enabled'] :
+        return  "end"
+
+    if not state['response'].visualization :
+        return  "end"
+
+    return "plot_builder"
 
 # defining the graph 
 graph = StateGraph(AgentState)
@@ -49,6 +57,7 @@ graph.add_node("sql_generator",sql_generator)
 graph.add_node("sql_auditor",sql_auditor)
 graph.add_node("result_analyst",result_analyst)
 graph.add_node("execute",execute)
+graph.add_node("plot_builder",plot_builder)
 
 #Workflow 
 graph.add_edge(START,"intent_analyst")
@@ -75,8 +84,16 @@ graph.add_conditional_edges(
 )
 
 graph.add_edge("execute","result_analyst")
+graph.add_conditional_edges(
+    "result_analyst",
+    plotting_route,
+    {
+        "end":END,
+        "plot_builder":"plot_builder"
+    }
+)
 
-graph.add_edge("result_analyst",END)
+graph.add_edge("plot_builder",END)
 
 checkpointer = InMemorySaver()
 

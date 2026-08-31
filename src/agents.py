@@ -32,5 +32,5 @@ intent_analyst_llm = intent_prompt | llm.with_structured_output(IntentState)
 sql_generator_llm  = sql_generator_prompt | llm.with_structured_output(SQLState)
 sql_auditor_llm  = sql_auditor_prompt | llm.with_structured_output(AuditState)
 result_analyst_llm = result_analyst_prompt | llm.with_structured_output(Response)
-plot_analyst_llm = plot_analyst_prompt | llm.with_structured_output(PlotState)
+plot_analyst_llm = plot_analyst_prompt | llm.with_structured_output(AllPlots)
 
