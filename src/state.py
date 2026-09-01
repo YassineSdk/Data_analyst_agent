@@ -4,7 +4,7 @@ from models import (
         SQLState,
         AuditState,
         ExecutionState,
-        Response,
+        AnalystResponse,
         IntentHistory,
         AllPlots
     )
@@ -21,6 +21,6 @@ class AgentState(TypedDict):
     sql: NotRequired[SQLState | None ]
     audit: NotRequired[AuditState | None ]
     execution: NotRequired[ExecutionState | None ]
-    response: NotRequired[Response  | None ] 
+    response: NotRequired[AnalystResponse  | None ] 
     plots_enabled : bool = False
     allplots : NotRequired[AllPlots | None]

@@ -26,9 +26,8 @@ class ExecutionState(BaseModel):
     result: list[list] | None = None
     error: str | None = None 
 
-class Response(BaseModel):
+class AnalystResponse(BaseModel):
     answer: str 
-    export_file:str | None = None 
     visualization: bool = Field(
         default=False,
         description="""
@@ -42,15 +41,15 @@ class Response(BaseModel):
     )
 
 class IntentState(BaseModel):
+    is_analytics_query: bool = Field(
+    description=(
+        "Indicates whether the user's request has an analytical purpose "
+        "that can be addressed using the available data and analytics capabilities. "
+        "True for data/business analysis requests; False for greetings, casual "
+        "conversation, unrelated questions, or requests outside the agent's domain."
+    )
+    )
     interpretation: str 
-    confidence: float = Field(
-        ge=0.0,
-        le=1.0,
-        description="""
-        ranges from 0 to 1 and mesures the level 
-        of clarity and information the the agent has 
-        over the user query 
-            """)
     feedback : str | None = None
     needs_clarification: bool = False
     clarification: str | None = Field(
@@ -84,7 +83,6 @@ class PlotState(BaseModel):
 class AllPlots(BaseModel):
     plots : list[PlotState]
     plot_exists : bool = False
-
 
 
 

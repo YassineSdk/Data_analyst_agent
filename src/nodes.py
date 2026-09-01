@@ -17,8 +17,8 @@ from utils import (intent_template_maker,
         read_context ,
         get_current_history
         )
-from config import CONFIDENCE_THRESHOLD
 import pandas as pd 
+from models import AnalystResponse
 
 
 Data_CONTEXT = read_context("data_context.txt")
@@ -36,31 +36,20 @@ def intent_analyst(state: AgentState) -> dict:
     )
 
     pprint(result)
-    if state['mode'] == "Ask for clarification": 
-        # Derive if clarification is still needed 
-        if result.confidence < CONFIDENCE_THRESHOLD:
-            logger.info(
-                "Confidence below threshold (%.2f). "
-                "Requesting user clarification.",
-                CONFIDENCE_THRESHOLD
-            )
+    
+    # Derive if clarification is still needed 
+    if result.needs_clarification:
 
         # Pause the graph and ask the user
-            feedback = interrupt(
+        feedback = interrupt(
                     {
                         "type": "intent_clarification",
                         "question": result.clarification
                     }
                 )
-        
-            logger.info(
-                    "User feedback received: %s",
-                    feedback
-                )
-
-            # adding feedback to the result
-            result.feedback = feedback
-    
+        # adding feedback to the result
+        result.feedback = feedback
+    pprint(result)
     # create new intent 
     new_history = IntentHistory(
     message_id=state["messages"][-1].id,
@@ -128,9 +117,6 @@ def sql_auditor(state:AgentState)->dict:
 
     Current intent:
     {latest_intent.interpretation}
-
-    Confidence:
-    {latest_intent.confidence}
 
     Feedback:
     {latest_intent.feedback or "None"}
@@ -220,7 +206,18 @@ def plot_builder(state:AgentState)->dict:
     }
 
 
-
+def out_of_domain(state):
+    return {
+        "response": AnalystResponse(
+            answer=(
+                "I'm specialized in data and business analytics. "
+                "Please ask me a question related to the available data, "
+                "such as revenue, profit, customers, products, trends, "
+                "comparisons, or other analytical insights."
+            ),
+            visualization=False
+        )
+    }
 
 
 

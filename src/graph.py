@@ -3,26 +3,33 @@ from langgraph.checkpoint.memory import InMemorySaver
 from nodes import * 
 from state import AgentState
 from utils import get_current_history
+from dotenv import load_dotenv, find_dotenv
+
+
+load_dotenv(find_dotenv(".env"))
 
 
 
 def intent_route(state:AgentState)->str:
     """
-    it routes the graph to :
-    - the sql_generater if the intent does not needs clarification
-    - intent analyst if the the request needs clarification .
-    by the user else the user provides feedback to it  
-    """
-    if state['mode'] == "Ask for clarification" :
-    # current message id : 
-        _,latest_intent = get_current_history(state)
-    
-        if latest_intent.confidence >= CONFIDENCE_THRESHOLD:
-            return "sql_generator"
-        else :
-            return "intent_analyst"
+    Routes the graph after intent analysis:
 
+    - out_of_domain: request is not analytical
+    - intent_analyst: analytical request requires clarification/revision
+    - sql_generator: analytical intent is ready for SQL generation  
+    """
+    _,latest_intent = get_current_history(state)
+
+    # Request is outside the agent's analytical domain
+    if  not latest_intent.is_analytics_query:
+        return "out_of_domain"
+    
+    # Request is an analytical query
+    if latest_intent.needs_clarification:
+            return "intent_analyst"
+        
     return "sql_generator"
+
 
 
 def audit_route(state:AgentState)->str:
@@ -58,9 +65,12 @@ graph.add_node("sql_auditor",sql_auditor)
 graph.add_node("result_analyst",result_analyst)
 graph.add_node("execute",execute)
 graph.add_node("plot_builder",plot_builder)
+graph.add_node("out_of_domain",out_of_domain)
 
 #Workflow 
 graph.add_edge(START,"intent_analyst")
+graph.add_edge("out_of_domain",END)
+
 
 graph.add_conditional_edges(
     "intent_analyst",
@@ -68,6 +78,7 @@ graph.add_conditional_edges(
     {
         "sql_generator": "sql_generator",
         "intent_analyst": "intent_analyst",
+        "out_of_domain": "out_of_domain"
     }
 )
 
