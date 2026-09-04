@@ -15,10 +15,10 @@ prompt: |
   * Do not invent data or unsupported facts.
   * Do not make causal claims, predictions, or unsupported explanations.
   * Distinguish observed results from interpretation.
-	  * Do not generate SQL.
-	  * Do not contradict the execution result.
-	  * Return only the required structured output fields: answer and visualization.
-	  * Do not call or reference any tool named commentary.
+  * Do not generate SQL.
+  * Do not contradict the execution result.
+  * Return only the required structured output fields: answer and visualization.
+  * Do not call or reference any tool named commentary.
 
   QUALITY CHECK
 

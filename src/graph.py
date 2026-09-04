@@ -111,3 +111,5 @@ checkpointer = InMemorySaver()
 Agent = graph.compile(
     checkpointer=checkpointer
 )
+
+#print(Agent.get_graph().draw_mermaid())

@@ -45,41 +45,7 @@ The project is designed around a multi-agent workflow where each step has a focu
 ## Architecture
 
 The application is organized as a graph of specialized nodes. The user interacts with Chainlit, and Chainlit sends each message into the compiled LangGraph agent.
-
-```text
-User
-  |
-  v
-Chainlit UI
-  |
-  v
-LangGraph Agent
-  |
-  +--> Intent Analyst
-  |      |
-  |      +--> Out-of-domain response
-  |      |
-  |      +--> Clarification interrupt
-         |
-         +--> Clarification interrupt
-  |
-  +--> SQL Generator
-  |
-  +--> SQL Auditor
-  |      |
-  |      +--> Approved: execute SQL
-  |      |
-  |      +--> Rejected: return to SQL Generator
-  |
-  +--> SQL Executor
-  |
-  +--> Result Analyst
-  |
-  +--> Plot Builder
-  |
-  v
-Final answer and optional Plotly charts
-```
+![graph](DA_agent.png)
 
 ### Main Components
 
@@ -425,15 +391,7 @@ The chat UI exposes:
 | `Max_retries` | Slider | Intended maximum number of retries. |
 | `Generate visualizations` | Switch | Enables or disables automatic Plotly charts. |
 
-### Agent Configuration
 
-`src/config.py` currently defines:
-
-```python
-CONFIDENCE_THRESHOLD = 0.60
-```
-
-This can be used as a threshold for intent confidence logic if confidence scoring is added to the intent model.
 
 ## Prompt System
 
@@ -564,10 +522,7 @@ The SQL executor catches database exceptions and stores the error in `ExecutionS
 Potential improvements:
 
 - Add persistent LangGraph checkpointing for production use.
-- Add automated tests for routing, SQL audit behavior, and plotting.
 - Enforce max retry behavior in the graph state.
-- Add an explicit `confidence` field to `IntentState` if prompt-level confidence should be used.
-- Rename `src/excuter.py` to `src/executor.py` for clarity.
 - Convert source imports into package-relative imports.
 - Add a read-only SQL guard at execution time in addition to the LLM audit.
 - Add support for more chart types and true pie chart rendering.

@@ -11,3 +11,4 @@ wheels/
 .env
 .chainlit
 src/.files
+.codex
