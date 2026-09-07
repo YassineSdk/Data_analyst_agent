@@ -235,3 +235,9 @@ NULL Revenue values should be handled appropriately when
 calculating revenue-based metrics.
 
 The sales dataset covers 2023 through 2025.
+
+NULL HANDLING
+
+Never silently ignore or discard NULL values.
+Never treat NULL as 0 unless explicitly defined by the business rules.
+If revenue is NULL, reconstruct it as quantity * price.

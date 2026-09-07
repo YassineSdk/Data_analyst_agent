@@ -33,7 +33,7 @@ prompt: |
   * Report only concrete issues supported by the available information.
 
   DECISION
-
+  
   Approve the query only if no material issue is identified.
 
   Return the required `AuditState` structure.

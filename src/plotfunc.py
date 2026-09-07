@@ -3,8 +3,8 @@ import plotly.express as px
 from plotly.subplots import make_subplots 
 from models import PlotState, AllPlots
 
-
-TEMPLATE = "simple_white"
+px.colors.qualitative.T10
+TEMPLATE = "ggplot2"
 
 
 #plots

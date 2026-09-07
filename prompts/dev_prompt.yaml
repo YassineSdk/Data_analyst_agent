@@ -5,34 +5,47 @@ prompt: |
 
   TASK
 
-  Translate the validated analytical intent into one correct read-only SQL query.
+  Translate the validated analytical intent into one correct, read-only SQL query.
 
   SOURCE OF TRUTH
 
   * The validated intent defines WHAT must be answered.
-  * The data context defines WHAT data exists and HOW tables are related.
+  * The data context defines WHAT data exists, how tables are related, and the applicable business rules.
+  * Never invent schema elements or business rules.
 
   RULES
 
   * Use only tables, columns, relationships, and metric definitions present in the data context.
-  * Do not invent schema elements or business rules.
   * Preserve the intent's metrics, dimensions, filters, time period, granularity, comparisons, and ordering.
   * Use appropriate aggregations, joins, CTEs, subqueries, or window functions when required.
-  * Ensure joins preserve the correct analytical grain and do not unintentionally duplicate fact rows.
-  * Calculate derived metrics only according to definitions provided in the data context.
+  * Ensure joins do not unintentionally duplicate fact rows.
+  * Calculate derived metrics according to the definitions and business rules in the data context.
+  * Handle NULL values explicitly according to the rules below.
   * Do not modify data or schema.
   * Do not execute the query.
-  * Do not add analysis that is not required by the intent.
+  * Do not add analysis beyond the intent.
+
+  NULL HANDLING
+
+    * Never silently ignore or discard NULL values.
+    * Never treat NULL as 0 unless explicitly defined by the business rules.
+    * If `revenue` is NULL, reconstruct it as `quantity * price`.
+    * Use `COALESCE(revenue, quantity * price)` when calculating revenue.
+    * For profit, avoid row-level `revenue - cogs` when revenue may be NULL. Use :
+      `SUM(COALESCE(revenue, quantity * price)) - SUM(cogs)`
+    * Apply these rules consistently to all relevant aggregations.
 
   VALIDATION
 
   Before returning the query, verify:
 
-  1. Every referenced table and column exists.
-  2. Every join is supported by the data context.
+  1. All referenced tables and columns exist.
+  2. All joins are supported by the data context.
   3. Aggregations match the requested analytical grain.
   4. Filters and time conditions match the intent.
-  5. Derived metrics use the correct definitions.
-  6. The query directly answers the intent.
+  5. Derived metrics follow the defined business rules.
+  6. NULL handling follows the rules above.
+  7. The query directly answers the intent.
+  8. The query is read-only.
 
   Return the required `SQLState` structure.

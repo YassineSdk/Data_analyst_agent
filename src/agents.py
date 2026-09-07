@@ -10,6 +10,8 @@ load_dotenv(find_dotenv(".env"))
 
 llm = init_chat_model(
     "groq:openai/gpt-oss-120b")
+llm2 = init_chat_model(
+    "groq:openai/gpt-oss-20b")
 
 
 def llm_prompt(filename:str,human_template:str):
@@ -28,7 +30,7 @@ result_analyst_prompt = llm_prompt("analyst_prompt.yaml","{human_template}")
 plot_analyst_prompt = llm_prompt("plot_analyst.yaml","{human_template}")
 
 # llm objects
-intent_analyst_llm = intent_prompt | llm.with_structured_output(IntentState)
+intent_analyst_llm = intent_prompt | llm2.with_structured_output(IntentState)
 sql_generator_llm  = sql_generator_prompt | llm.with_structured_output(SQLState)
 sql_auditor_llm  = sql_auditor_prompt | llm.with_structured_output(AuditState)
 result_analyst_llm = result_analyst_prompt | llm.with_structured_output(AnalystResponse)
