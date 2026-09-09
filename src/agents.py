@@ -28,6 +28,7 @@ sql_generator_prompt  = llm_prompt("dev_prompt.yaml","{human_template}")
 sql_auditor_prompt = llm_prompt("audit_prompt.yaml","{human_template}")
 result_analyst_prompt = llm_prompt("analyst_prompt.yaml","{human_template}")
 plot_analyst_prompt = llm_prompt("plot_analyst.yaml","{human_template}")
+out_of_domain_prompt = llm_prompt("out_of_domain_prompt.yaml","{human_template}")
 
 # llm objects
 intent_analyst_llm = intent_prompt | llm2.with_structured_output(IntentState)
@@ -35,3 +36,5 @@ sql_generator_llm  = sql_generator_prompt | llm.with_structured_output(SQLState)
 sql_auditor_llm  = sql_auditor_prompt | llm.with_structured_output(AuditState)
 result_analyst_llm = result_analyst_prompt | llm.with_structured_output(AnalystResponse)
 plot_analyst_llm = plot_analyst_prompt | llm.with_structured_output(AllPlots)
+out_of_domain_llm = out_of_domain_prompt | llm.with_structured_output(RedirectState, method="json_schema")
+

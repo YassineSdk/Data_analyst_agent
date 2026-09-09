@@ -21,6 +21,7 @@ prompt: |
   * Do not create redundant plots.
   * Prefer the simplest visualization that communicates the analytical objective.
 
+
   CATEGORICAL DIMENSIONS
 
   * When a categorical dimension distinguishes multiple groups, prefer using it as `color` to make group differences visually clear.
@@ -28,7 +29,6 @@ prompt: |
   * Example: for revenue by region, use `x=region`, `y=revenue`, and `color=region`.
   * Use `color` to visually distinguish categories, not to encode additional numeric measures.
   * Do not use `color` when it would add no meaningful distinction.
-
   CHART SELECTION
 
   * `line` → time-series or ordered temporal trends.

@@ -10,7 +10,8 @@ from agents import (
     sql_auditor_llm,
     result_analyst_llm,
     intent_analyst_llm,
-    plot_analyst_llm
+    plot_analyst_llm,
+    out_of_domain_llm
 )
 from excuter import sql_executor
 from utils import (intent_template_maker,
@@ -34,8 +35,6 @@ def intent_analyst(state: AgentState) -> dict:
             "human_template": human_template
         }
     )
-
-    pprint(result)
     
     # Derive if clarification is still needed 
     if result.needs_clarification:
@@ -207,16 +206,25 @@ def plot_builder(state:AgentState)->dict:
 
 
 def out_of_domain(state):
+    """
+    """
+
+    human_template = f"""
+    user_message :
+    {state["messages"][-1].HumanMessages}
+
+    data_context :
+    {Data_CONTEXT}
+    """
+
+    result = out_of_domain_llm.invoke(
+        {
+            "human_template":human_template
+        }
+    )
+    pprint(result)
     return {
-        "response": AnalystResponse(
-            answer=(
-                "I'm specialized in data and business analytics. "
-                "Please ask me a question related to the available data, "
-                "such as revenue, profit, customers, products, trends, "
-                "comparisons, or other analytical insights."
-            ),
-            visualization=False
-        )
+        "redirect": result
     }
 
 

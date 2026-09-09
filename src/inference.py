@@ -33,6 +33,11 @@ async def set_starters():
             icon="/public/products_perf.svg"
         ),
         cl.Starter(
+            label="Top 10 Customers",
+            message="Show me the top 10 customers by revenue, including total revenue, total quantity purchased, and number of orders.",
+            icon="/public/customer.svg",
+        ),
+        cl.Starter(
             label="Regional Performance",
             message="""
             Analyze sales performance by region for 2025. Show total revenue,
@@ -130,82 +135,125 @@ async def setup_agent(settings):
     )
 
 
+
+async def process_query(message: cl.Message):
+
+    try:
+        thread_id = cl.user_session.get("thread_id")
+        Max_retries = cl.user_session.get("Max_retries")
+        plots_enabled = cl.user_session.get("plots")
+        message_id = str(uuid.uuid4())
+        config = {
+            "configurable":{"thread_id":thread_id}
+        }
+        
+        new_message = Message(
+            id=message_id,
+            HumanMessages=message.content,
+            AIMessages=""
+        )
+
+        new_intent_history=IntentHistory(
+            message_id=message_id,
+            intents=[]
+        )
+
+        initial_state = {
+        "messages": [new_message],
+        "Max_retries":Max_retries,
+        "plots_enabled":plots_enabled,
+        "data_context": "",
+        "intent_histories": [
+            new_intent_history
+        ],
+        }
+
+        logger.info(f"number of retries is {Max_retries}")
+        result = await Agent.ainvoke(
+            initial_state,
+            config=config
+        )
+        
+        #if the agent needs clarification 
+        if "__interrupt__" in result:
+            result = await handle_interruption(
+                result,
+                config
+            )
+            result  = await handle_interruption(result,config)
+
+        if result is None:
+            return
+        
+
+        redirect = result.get("redirect")
+        _,latest_intent = get_current_history(result)
+
+        pprint(redirect)
+
+        # if the user query is out of domaine 
+
+        if (not latest_intent.is_analytics_query 
+            and redirect 
+            and redirect.is_out_of_domain
+        ):
+            actions = []
+
+            for query in redirect.suggestions [:3]:
+                actions.append(
+                    cl.Action(
+                        name="suggested_query",
+                        label=query,
+                        payload={"query": query}
+                    )
+                )
+            await cl.Message(
+                content=redirect.message,
+                actions=actions
+            ).send()
+
+            return 
+
+        response = result["response"]
+        # generate the plot if enabled
+        figures = []
+        allplots = result.get("allplots")
+
+        if (
+            plots_enabled
+            and response.visualization 
+            and  allplots
+            ) :
+
+            figures = Get_Plots(result)
+
+        msg = await cl.Message(
+            content=response.answer
+        ).send()
+
+        for fig in figures:
+            await cl.Plotly(
+                name=fig.layout.title.text,
+                figure=fig,
+                display="inline"
+            ).send(for_id=msg.id) 
+    except Exception as e :
+        logger.error(f"Unexpected error while processing user request {e}")
+        
+        await cl.Message(
+            content="Something went wrong while processing your request."
+        ).send()
+
+
 @cl.on_message
 async def main(message: cl.Message):
+    await process_query(message)
 
-    thread_id = cl.user_session.get("thread_id")
-    Max_retries = cl.user_session.get("Max_retries")
-    plots_enabled = cl.user_session.get("plots")
-    message_id = str(uuid.uuid4())
-    config = {
-        "configurable":{"thread_id":thread_id}
-    }
+
+@cl.action_callback("suggested_query")
+async def handle_suggested_query(action:cl.Action):
+    query = cl.Message(content=action.payload["query"])
+
+    await process_query(query)
     
-    new_message = Message(
-        id=message_id,
-        HumanMessages=message.content,
-        AIMessages=""
-    )
-
-    new_intent_history=IntentHistory(
-        message_id=message_id,
-        intents=[]
-    )
-
-    initial_state = {
-    "messages": [new_message],
-    "Max_retries":Max_retries,
-    "plots_enabled":plots_enabled,
-    "data_context": "",
-    "intent_histories": [
-        new_intent_history
-    ],
-    }
-
-    logger.info(f"number of retries is {Max_retries}")
-    result = await Agent.ainvoke(
-        initial_state,
-        config=config
-    )
-
-    
-    # if the agent needs clarification 
-    if "__interrupt__" in result:
-        result = await handle_interruption(
-            result,
-            config
-        )
-        result  = await handle_interruption(result,config)
-
-    if result is None:
-        return
-    
-    response = result["response"]
-
-    # generate the plot if enabled
-    figures = []
-    allplots = result.get("allplots")
-
-    if (
-        plots_enabled
-        and response.visualization 
-        and  allplots
-        ) :
-
-        figures = Get_Plots(result)
-
-    msg = await cl.Message(
-        content=response.answer
-    ).send()
-
-    for fig in figures:
-        await cl.Plotly(
-            name=fig.layout.title.text,
-            figure=fig,
-            display="inline"
-        ).send(for_id=msg.id) 
-
-
-
-
-
+    await action.remove()

@@ -19,7 +19,11 @@ prompt: |
   * Do not contradict the execution result.
   * Return only the required structured output fields: answer and visualization.
   * Do not call or reference any tool named commentary.
+  note !!!:
+  * do not recommend visualizations when the dimension only account for one unique value meaning no meaningful comparison can be made.
 
   QUALITY CHECK
-
+  output: 
+  when returning the answer, ensure that it is clear, concise, and directly addresses the analytical objective.
+  it preferable to use table when possible to present the answer in a structured format, especially when multiple metrics or comparisons are involved.
   Every important claim must be directly supported by the execution result or a calculation derived from it.

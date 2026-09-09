@@ -47,9 +47,10 @@ class IntentState(BaseModel):
         "that can be addressed using the available data and analytics capabilities. "
         "True for data/business analysis requests; False for greetings, casual "
         "conversation, unrelated questions, or requests outside the agent's domain."
+    ),
+    default=True
     )
-    )
-    interpretation: str 
+    interpretation: str | None = None
     feedback : str | None = None
     needs_clarification: bool = False
     clarification: str | None = Field(
@@ -84,9 +85,19 @@ class AllPlots(BaseModel):
     plots : list[PlotState]
     plot_exists : bool = False
 
-
-
-
+class RedirectState(BaseModel):
+    message: str = Field(
+        description="A friendly message that redirects the user toward the supported analytics domain."
+    )
+    suggestions: list[str] = Field(
+        default_factory=list,
+        description="Up to 3 suggested analytical questions the user can click and ask."
+    )
+    is_out_of_domain: bool = Field(
+        default=False,
+        description="True when the user's request is outside the supported analytics domain."
+    )
+    
 
 
 

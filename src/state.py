@@ -6,7 +6,8 @@ from models import (
         ExecutionState,
         AnalystResponse,
         IntentHistory,
-        AllPlots
+        AllPlots,
+        RedirectState
     )
 
 from utils import add_messages,add_intent_history
@@ -24,3 +25,4 @@ class AgentState(TypedDict):
     response: NotRequired[AnalystResponse  | None ] 
     plots_enabled : bool = False
     allplots : NotRequired[AllPlots | None]
+    redirect : NotRequired[RedirectState | None ]
