@@ -7,9 +7,6 @@ class Message(BaseModel):
     HumanMessages:str 
     AIMessages : str
 
-class ConversationState(BaseModel):
-    messages : list[Message]
-
 class SQLState(BaseModel):
     query:str
     explanation:str 

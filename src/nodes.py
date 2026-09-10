@@ -20,17 +20,20 @@ from utils import (intent_template_maker,
         )
 import pandas as pd 
 from models import AnalystResponse
+import chainlit as cl
 
 
 Data_CONTEXT = read_context("data_context.txt")
 
-def intent_analyst(state: AgentState) -> dict:
+
+async def intent_analyst(state: AgentState) -> dict:
     
+    current_step = cl.context.current_step
     logger.info("Starting the intent analyst")
     human_template = intent_template_maker(state)
 
     # Generating the new intent
-    result = intent_analyst_llm.invoke(
+    result = await intent_analyst_llm.ainvoke(
         {
             "human_template": human_template
         }
@@ -38,6 +41,7 @@ def intent_analyst(state: AgentState) -> dict:
     
     # Derive if clarification is still needed 
     if result.needs_clarification:
+        current_step.input = "the agent needs clarification"
 
         # Pause the graph and ask the user
         feedback = interrupt(
@@ -60,7 +64,8 @@ def intent_analyst(state: AgentState) -> dict:
     }
 
 
-def sql_generator(state: AgentState)-> dict :
+
+async def sql_generator(state: AgentState)-> dict :
     """
     generates an SQL script that solves the users query
     """
@@ -68,7 +73,7 @@ def sql_generator(state: AgentState)-> dict :
     logger.info("starting the SQL generator agent")
 
     latest_message = state["messages"][-1]
-    history,latest_intent = get_current_history(state)
+    history,latest_intent =  get_current_history(state)
     
     human_template =f"""
     User query:
@@ -83,7 +88,7 @@ def sql_generator(state: AgentState)-> dict :
     {latest_intent.feedback or None }
     """
 
-    result = sql_generator_llm.invoke(
+    result = await sql_generator_llm.ainvoke(
         {
         "human_template":human_template
         }
@@ -95,7 +100,8 @@ def sql_generator(state: AgentState)-> dict :
     }
 
 
-def sql_auditor(state:AgentState)->dict:
+
+async def sql_auditor(state:AgentState)->dict:
     """
     Audit the generated SQL query.
     """
@@ -121,7 +127,7 @@ def sql_auditor(state:AgentState)->dict:
     {latest_intent.feedback or "None"}
     """
 
-    result = sql_auditor_llm.invoke({
+    result = await sql_auditor_llm.ainvoke({
         "human_template":human_template
     })
 
@@ -131,7 +137,8 @@ def sql_auditor(state:AgentState)->dict:
     }
 
 
-def result_analyst(state:AgentState)->dict:
+
+async def result_analyst(state:AgentState)->dict:
     """
     Analyze the execution result and generate the final response.
     """
@@ -139,7 +146,7 @@ def result_analyst(state:AgentState)->dict:
     logger.info("starting the result analyst agent")
 
     latest_message = state["messages"][-1]
-    history,latest_intent = get_current_history(state)
+    history,latest_intent =  get_current_history(state)
 
     human_template = f"""
     Validated user intent:
@@ -149,7 +156,7 @@ def result_analyst(state:AgentState)->dict:
     {state["execution"]}
     """
 
-    result = result_analyst_llm.invoke({
+    result = await result_analyst_llm.ainvoke({
         "human_template":human_template
     })
     pprint(result)
@@ -158,14 +165,15 @@ def result_analyst(state:AgentState)->dict:
     }
 
 
-def execute(state:AgentState)->dict:
+
+async def execute(state:AgentState)->dict:
     """
     executes the SQL code 
     """
 
     logger.info("executing the SQL query")
 
-    result = sql_executor.execute(
+    result =  sql_executor.execute(
         state["sql"].query
     )
 
@@ -175,7 +183,8 @@ def execute(state:AgentState)->dict:
     }
 
 
-def plot_builder(state:AgentState)->dict:
+
+async def plot_builder(state:AgentState)->dict:
     """
     """
 
@@ -194,7 +203,7 @@ def plot_builder(state:AgentState)->dict:
     {current_intent.interpretation}
     """
 
-    result = plot_analyst_llm.invoke({
+    result = await plot_analyst_llm.ainvoke({
         "human_template":human_template
         }
     )
@@ -205,19 +214,23 @@ def plot_builder(state:AgentState)->dict:
     }
 
 
-def out_of_domain(state):
-    """
-    """
 
+async def out_of_domain(state):
+    """
+    """
+    conversation = "\n".join(
+        f"Human:{message.HumanMessages}\n"
+        for message in state["messages"]
+    )
     human_template = f"""
-    user_message :
-    {state["messages"][-1].HumanMessages}
+    Conversation history :
+    {conversation}
 
     data_context :
     {Data_CONTEXT}
     """
 
-    result = out_of_domain_llm.invoke(
+    result = await out_of_domain_llm.ainvoke(
         {
             "human_template":human_template
         }

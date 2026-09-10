@@ -189,15 +189,14 @@ async def process_query(message: cl.Message):
         redirect = result.get("redirect")
         _,latest_intent = get_current_history(result)
 
-        pprint(redirect)
-
-        # if the user query is out of domaine 
+        # if the user query is out of domaine
 
         if (not latest_intent.is_analytics_query 
             and redirect 
             and redirect.is_out_of_domain
         ):
             actions = []
+            pprint(redirect)
 
             for query in redirect.suggestions [:3]:
                 actions.append(
