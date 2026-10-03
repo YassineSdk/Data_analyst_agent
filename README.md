@@ -2,10 +2,12 @@
 
 DA Agent is a conversational data analysis assistant built with Chainlit, LangGraph, LangChain, Groq-hosted LLMs, PostgreSQL, pandas, and Plotly. It lets users ask business questions in natural language, converts those questions into safe SQL, executes the SQL against a sales database, explains the results, and optionally returns interactive charts.
 
+![Project Demo](Orbie_Demo.png)
+
 The project is designed around a multi-agent workflow where each step has a focused responsibility: intent understanding, SQL generation, SQL auditing, query execution, result interpretation, and visualization planning.
 
 ## Table of Contents
-
+[]
 - [Features](#features)
 - [Architecture](#architecture)
 - [Agent Workflow](#agent-workflow)
