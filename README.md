@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/3313739e-652e-43a9-983d-090d105c5c77
-
 # DA Agent
 
 DA Agent is a conversational data analysis assistant built with Chainlit, LangGraph, LangChain, Groq-hosted LLMs, PostgreSQL, pandas, and Plotly. It lets users ask business questions in natural language, converts those questions into safe SQL, executes the SQL against a sales database, explains the results, and optionally returns interactive charts.
